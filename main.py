@@ -1,102 +1,18 @@
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
-from typing import Optional
-import mysql.connector
 from mysql.connector import Error
-import os
+from typing import Optional
+
+from database import get_db_connection
+from models import (
+    FoodCategory, FoodItem, FoodListResponse, CategoryListResponse,
+    CategoryCreate, FoodCreate, TemplateCreate
+)
 
 app = FastAPI(
     title="Diet Simulator API",
     description="API for managing diet plans and food items",
     version="1.0.0"
 )
-
-# Database configuration
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "port": int(os.getenv("DB_PORT", "3306")),
-    "user": os.getenv("DB_USER", "clinic_user"),
-    "password": os.getenv("DB_PASSWORD", "clinic_password"),
-    "database": os.getenv("DB_NAME", "medical_clinic")
-}
-
-
-def get_db_connection():
-    """Create and return a database connection."""
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        return connection
-    except Error as e:
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
-
-
-# Pydantic models
-class FoodCategory(BaseModel):
-    id: int
-    name: str
-    icon: Optional[str] = None
-    color: Optional[str] = None
-    sort_order: int
-
-
-class FoodItem(BaseModel):
-    id: int
-    category_id: int
-    category_name: Optional[str] = None
-    name: str
-    description: Optional[str] = None
-    default_portion_grams: int
-    calories_per_100g: Optional[float] = None
-    protein_per_100g: Optional[float] = None
-    carbs_per_100g: Optional[float] = None
-    fat_per_100g: Optional[float] = None
-    fiber_per_100g: Optional[float] = None
-    is_snack_suitable: bool
-    status: bool
-
-
-class FoodListResponse(BaseModel):
-    success: bool
-    count: int
-    foods: list[FoodItem]
-
-
-class CategoryListResponse(BaseModel):
-    success: bool
-    count: int
-    categories: list[FoodCategory]
-
-
-# Request models for POST
-class CategoryCreate(BaseModel):
-    name: str
-    icon: Optional[str] = None
-    color: Optional[str] = None
-    sort_order: int = 0
-
-
-class FoodCreate(BaseModel):
-    category_id: int
-    name: str
-    description: Optional[str] = None
-    default_portion_grams: int = 100
-    calories_per_100g: Optional[float] = None
-    protein_per_100g: Optional[float] = None
-    carbs_per_100g: Optional[float] = None
-    fat_per_100g: Optional[float] = None
-    fiber_per_100g: Optional[float] = None
-    is_snack_suitable: bool = False
-
-
-class TemplateCreate(BaseModel):
-    code: str
-    name: str
-    description: Optional[str] = None
-    segment: str
-    type: str
-    duration_days: int = 30
-    calories_target: Optional[int] = None
-    notes: Optional[str] = None
 
 
 # API Endpoints
