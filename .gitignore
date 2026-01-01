@@ -59,3 +59,5 @@ Thumbs.db
 # Database
 *.db
 *.sqlite3
+database/
+docs/
