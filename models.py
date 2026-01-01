@@ -69,3 +69,18 @@ class TemplateCreate(BaseModel):
     duration_days: int = 30
     calories_target: Optional[int] = None
     notes: Optional[str] = None
+
+
+# Benchmark models
+class BulkInsertItem(BaseModel):
+    food_item_id: int
+    portion_grams_min: int
+    portion_grams_max: int
+    portion_description: Optional[str] = None
+    is_optional: bool = False
+    sort_order: int = 0
+
+
+class BulkInsertRequest(BaseModel):
+    meal_id: int
+    items: list[BulkInsertItem]

@@ -91,7 +91,6 @@ Default MySQL credentials (from project .env):
 - DB_PASSWORD (default: empty)
 - DB_NAME (default: medical_clinic)
 
-# uvicorn main:app --reload
+> uvicorn main:app --reload
 
-# python diet_api_test.py --url <http://localhost:8000>
-# testResponsePyDiets
+> python diet_api_test.py

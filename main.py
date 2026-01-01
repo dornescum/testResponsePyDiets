@@ -5,7 +5,7 @@ from typing import Optional
 from database import get_db_connection
 from models import (
     FoodCategory, FoodItem, FoodListResponse, CategoryListResponse,
-    CategoryCreate, FoodCreate, TemplateCreate
+    CategoryCreate, FoodCreate, TemplateCreate, BulkInsertRequest
 )
 
 app = FastAPI(
@@ -145,7 +145,7 @@ def get_food_by_id(food_id: int):
         food["is_snack_suitable"] = bool(food["is_snack_suitable"])
         food["status"] = bool(food["status"])
 
-        return food
+        return {"success": True, "data": food}
 
     except Error as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -184,7 +184,7 @@ def get_all_categories():
         connection.close()
 
 
-@app.get("/api/categories/{category_id}", response_model=FoodCategory)
+@app.get("/api/categories/{category_id}")
 def get_category_by_id(category_id: int):
     """Get a specific category by ID."""
     connection = get_db_connection()
@@ -202,7 +202,7 @@ def get_category_by_id(category_id: int):
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
 
-        return category
+        return {"success": True, "data": category}
 
     except Error as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -439,6 +439,86 @@ def create_template(template: TemplateCreate):
         return {
             "success": True,
             "data": {"id": cursor.lastrowid, **template.model_dump()}
+        }
+
+    except Error as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+# ============================================
+# BENCHMARK ENDPOINTS
+# ============================================
+
+@app.get("/api/benchmark/complex-query")
+def benchmark_complex_query():
+    """Complex query for benchmarking - aggregates nutritional data by category."""
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        query = """
+            SELECT
+                fc.name as category,
+                COUNT(fi.id) as food_count,
+                AVG(fi.calories_per_100g) as avg_calories,
+                AVG(fi.protein_per_100g) as avg_protein,
+                AVG(fi.carbs_per_100g) as avg_carbs,
+                AVG(fi.fat_per_100g) as avg_fat
+            FROM food_categories fc
+            LEFT JOIN food_items fi ON fc.id = fi.category_id
+            GROUP BY fc.id, fc.name
+            ORDER BY fc.sort_order
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        return {"success": True, "data": results}
+
+    except Error as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.post("/api/benchmark/bulk-insert", status_code=201)
+def benchmark_bulk_insert(request: BulkInsertRequest):
+    """Bulk insert meal items for benchmarking."""
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        query = """
+            INSERT INTO diet_meal_items
+            (meal_id, food_item_id, portion_grams_min, portion_grams_max,
+             portion_description, is_optional, sort_order)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+
+        inserted = 0
+        for item in request.items:
+            try:
+                cursor.execute(query, (
+                    request.meal_id, item.food_item_id, item.portion_grams_min,
+                    item.portion_grams_max, item.portion_description,
+                    item.is_optional, item.sort_order
+                ))
+                inserted += 1
+            except Error:
+                continue
+
+        connection.commit()
+
+        return {
+            "success": True,
+            "inserted_count": inserted,
+            "message": f"Inserted {inserted} items"
         }
 
     except Error as e:

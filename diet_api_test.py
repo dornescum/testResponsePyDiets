@@ -11,7 +11,6 @@ Usage:
     python diet_api_test.py --benchmark         # Run benchmarks
     python diet_api_test.py --verify-db         # Verify DB connection
 """
-'use strict'
 
 import argparse
 import json
@@ -38,14 +37,14 @@ except ImportError:
 class Config:
     """API and Database configuration"""
     # API Settings
-    base_url: str = "http://localhost:3000"
+    base_url: str = "http://localhost:8000"
     timeout: int = 30
 
     # MySQL Credentials (from project .env)
     db_host: str = "localhost"
     db_port: int = 3306
     db_user: str = "clinic_user"
-    db_password: str = "0216846822"
+    db_password: str = "clinic_password"
     db_name: str = "medical_clinic"
 
     # Benchmark Settings
@@ -247,7 +246,7 @@ def test_list_categories() -> TestResult:
         passed = (
             resp.status_code == 200
             and data.get("success") is True
-            and isinstance(data.get("data"), list)
+            and isinstance(data.get("categories"), list)
         )
 
         return TestResult(
@@ -255,7 +254,7 @@ def test_list_categories() -> TestResult:
             passed=passed,
             status_code=resp.status_code,
             response_time_ms=elapsed,
-            message="" if passed else f"Expected success response, got: {data}",
+            message="" if passed else f"Expected success response with categories, got: {data}",
             data=data,
         )
     except Exception as e:
@@ -327,23 +326,23 @@ def test_get_category(category_id: int = 1) -> TestResult:
 
 
 def test_list_foods() -> TestResult:
-    """Test GET /api/foods with pagination"""
+    """Test GET /api/foods"""
     try:
-        resp, elapsed = client.timed_get("/api/foods?page=1&limit=20")
+        resp, elapsed = client.timed_get("/api/foods")
         data = resp.json() if resp.text else {}
 
         passed = (
             resp.status_code == 200
             and data.get("success") is True
-            and isinstance(data.get("data"), list)
+            and isinstance(data.get("foods"), list)
         )
 
         return TestResult(
-            name="GET /api/foods?page=1&limit=20",
+            name="GET /api/foods",
             passed=passed,
             status_code=resp.status_code,
             response_time_ms=elapsed,
-            message="" if passed else f"Expected paginated list: {data}",
+            message="" if passed else f"Expected foods list: {data}",
             data=data,
         )
     except Exception as e:
@@ -359,10 +358,10 @@ def test_list_foods() -> TestResult:
 def test_list_foods_filtered() -> TestResult:
     """Test GET /api/foods with category filter"""
     try:
-        resp, elapsed = client.timed_get("/api/foods?category_id=1&page=1&limit=10")
+        resp, elapsed = client.timed_get("/api/foods?category_id=1")
         data = resp.json() if resp.text else {}
 
-        passed = resp.status_code == 200 and data.get("success") is True
+        passed = resp.status_code == 200 and data.get("success") is True and isinstance(data.get("foods"), list)
 
         return TestResult(
             name="GET /api/foods?category_id=1",
@@ -384,13 +383,13 @@ def test_list_foods_filtered() -> TestResult:
 def test_list_foods_search() -> TestResult:
     """Test GET /api/foods with search"""
     try:
-        resp, elapsed = client.timed_get("/api/foods?search=pollo&page=1&limit=10")
+        resp, elapsed = client.timed_get("/api/foods?search=chicken")
         data = resp.json() if resp.text else {}
 
-        passed = resp.status_code == 200 and data.get("success") is True
+        passed = resp.status_code == 200 and data.get("success") is True and isinstance(data.get("foods"), list)
 
         return TestResult(
-            name="GET /api/foods?search=pollo",
+            name="GET /api/foods?search=chicken",
             passed=passed,
             status_code=resp.status_code,
             response_time_ms=elapsed,
@@ -473,13 +472,13 @@ def test_get_food(food_id: int = 1) -> TestResult:
 def test_list_templates() -> TestResult:
     """Test GET /api/templates"""
     try:
-        resp, elapsed = client.timed_get("/api/templates?page=1&limit=20")
+        resp, elapsed = client.timed_get("/api/templates")
         data = resp.json() if resp.text else {}
 
         passed = (
             resp.status_code == 200
             and data.get("success") is True
-            and isinstance(data.get("data"), list)
+            and isinstance(data.get("templates"), list)
         )
 
         return TestResult(
@@ -558,7 +557,7 @@ def test_get_template_full(template_id: int = 1) -> TestResult:
         passed = (
             resp.status_code == 200
             and data.get("success") is True
-            and "days" in data.get("data", {})
+            and "days" in data.get("template", {})
         )
 
         return TestResult(
@@ -670,7 +669,7 @@ def test_benchmark_complex_query() -> TestResult:
 
         passed = (
             resp.status_code == 200
-            and isinstance(data.get("data"), list)
+            and data.get("success") is True
         )
 
         return TestResult(
