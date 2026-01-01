@@ -110,7 +110,7 @@ def get_all_foods(
         connection.close()
 
 
-@app.get("/api/foods/{food_id}", response_model=FoodItem)
+@app.get("/api/foods/{food_id}")
 def get_food_by_id(food_id: int):
     """Get a specific food item by ID."""
     connection = get_db_connection()
