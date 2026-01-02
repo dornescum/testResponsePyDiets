@@ -61,3 +61,5 @@ Thumbs.db
 *.sqlite3
 database/
 docs/
+
+CLAUDE.md

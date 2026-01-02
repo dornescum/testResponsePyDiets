@@ -33,10 +33,83 @@ class FoodListResponse(BaseModel):
     foods: list[FoodItem]
 
 
+class FoodItemResponse(BaseModel):
+    success: bool
+    data: FoodItem
+
+
 class CategoryListResponse(BaseModel):
     success: bool
     count: int
     categories: list[FoodCategory]
+
+
+class CategoryResponse(BaseModel):
+    success: bool
+    data: FoodCategory
+
+
+# Template models
+class DietMealItem(BaseModel):
+    id: int
+    food_item_id: int
+    food_name: str
+    portion_grams_min: int
+    portion_grams_max: int
+    portion_description: Optional[str] = None
+    preparation_notes: Optional[str] = None
+    is_optional: bool
+    sort_order: int
+
+
+class DietMeal(BaseModel):
+    id: int
+    meal_type: str
+    meal_order: int
+    time_suggestion: Optional[str] = None
+    notes: Optional[str] = None
+    items: list[DietMealItem] = []
+
+
+class DietDay(BaseModel):
+    id: int
+    day_number: int
+    day_name: Optional[str] = None
+    notes: Optional[str] = None
+    meals: list[DietMeal] = []
+
+
+class Template(BaseModel):
+    id: int
+    code: str
+    name: str
+    description: Optional[str] = None
+    segment: str
+    type: str
+    duration_days: int
+    calories_target: Optional[int] = None
+    notes: Optional[str] = None
+    status: bool
+
+
+class TemplateFull(Template):
+    days: list[DietDay] = []
+
+
+class TemplateListResponse(BaseModel):
+    success: bool
+    count: int
+    templates: list[Template]
+
+
+class TemplateResponse(BaseModel):
+    success: bool
+    template: Template
+
+
+class TemplateFullResponse(BaseModel):
+    success: bool
+    template: TemplateFull
 
 
 # Request models for POST

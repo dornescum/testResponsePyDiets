@@ -2,13 +2,16 @@ import os
 import mysql.connector
 from mysql.connector import Error
 from fastapi import HTTPException
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
+    "host": os.getenv("DB_HOST"),
     "port": int(os.getenv("DB_PORT", "3306")),
-    "user": os.getenv("DB_USER", "clinic_user"),
-    "password": os.getenv("DB_PASSWORD", "clinic_password"),
-    "database": os.getenv("DB_NAME", "medical_clinic")
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME")
 }
 
 
