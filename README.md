@@ -3,6 +3,8 @@
  pip install -r /Users/mihaidornescu/Documents/PERSONAL/Python/FAST_API/speedTest/requirements.txt
 Python test suite for the Diet API based on the benchmark blueprint.
 
+![chart](/analysis/charts/latency_20260102_164318.png)
+
 ## Setup
 
 ```bash
@@ -35,8 +37,8 @@ Default MySQL credentials (from project .env):
 
 - Host: localhost
 - Port: 3306
-- User: clinic_user
-- Password: 0216846822
+- User:
+- Password:
 - Database: medical_clinic
 
 ## Test Coverage
