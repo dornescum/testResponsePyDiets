@@ -80,15 +80,6 @@ Default MySQL credentials (from project .env):
 - snack_only - filter snack-suitable foods
 - search - search by name
 
-  To run the server:
-  python main.py
-
-# or
-
-  uvicorn main:app --reload
-
-  You'll need to set database credentials via environment variables or update DB_CONFIG in main.py:
-
 - DB_HOST (default: localhost)
 - DB_USER (default: root)
 - DB_PASSWORD (default: empty)
