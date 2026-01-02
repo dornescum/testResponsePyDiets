@@ -4,6 +4,7 @@
 Python test suite for the Diet API based on the benchmark blueprint.
 
 ![chart](/analysis/charts/latency_20260102_164318.png)
+![chart](/analysis/charts/requests_20260102_164318.png)
 
 ## Setup
 
